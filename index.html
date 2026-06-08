@@ -3,44 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estética Click — Sistema de Gestão Premium</title>
-    <meta name="description" content="Sistema de agendamento e gestão para clínicas de estética.">
-    <meta name="theme-color" content="#D4AF37">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
-    
-    <!-- CDNs externos (para produção considere baixar as libs) -->
+    <title>Estética Click - Sistema de Gestão Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%); }
-        .sidebar-active { background-color: #FFF0F5; color: #AA7C11; font-weight: bold; border-left: 4px solid #D4AF37; }
+        .sidebar-active { background-color: rgba(212, 175, 55, 0.1); color: #D4AF37; font-weight: bold; border-left: 4px solid #D4AF37; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen">
+<body class="bg-slate-950 font-sans text-slate-100 antialiased min-h-screen">
 
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 pointer-events-none"></div>
     <div id="app" class="min-h-screen flex flex-col justify-between"></div>
 
     <script>
         // ==========================================
-        // 🔒 Função de escape para segurança (evita XSS)
+        // 1. ESTRUTURA DO BANCO DE DADOS LOCAL
         // ==========================================
-        function esc(str) {
-            const div = document.createElement('div');
-            div.appendChild(document.createTextNode(str));
-            return div.innerHTML;
-        }
-
-        // ==========================================
-        // 💾 BANCO DE DADOS LOCAL (localStorage)
-        // ==========================================
-        const STORAGE_KEY = 'estetica_click_db';
-
         const DADOS_MOCK = {
             config: { usuario: "admin", senha: "123", chave: "ESTETICA2026", autenticado: false },
             financeiro: [
@@ -73,19 +57,16 @@
         };
 
         function lerDB() {
-            if (!localStorage.getItem(STORAGE_KEY)) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(DADOS_MOCK));
+            if (!localStorage.getItem('estetica_click_db')) {
+                localStorage.setItem('estetica_click_db', JSON.stringify(DADOS_MOCK));
             }
-            return JSON.parse(localStorage.getItem(STORAGE_KEY));
+            return JSON.parse(localStorage.getItem('estetica_click_db'));
         }
 
         function gravarDB(dados) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+            localStorage.setItem('estetica_click_db', JSON.stringify(dados));
         }
 
-        // ==========================================
-        // 🌐 NAVEGAÇÃO E TOAST
-        // ==========================================
         let telaAtiva = "dashboard";
         let graficoInstancia = null;
 
@@ -99,10 +80,10 @@
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = `p-4 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-3 transition-all duration-300 transform translate-y-2 pointer-events-auto min-w-[280px] ${
-                tipo === "sucesso" ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"
+                tipo === "sucesso" ? "bg-slate-900 border-emerald-500 text-emerald-400" : "bg-slate-900 border-rose-500 text-rose-400"
             }`;
             const icone = tipo === "sucesso" ? "fa-circle-check" : "fa-circle-exclamation";
-            toast.innerHTML = `<i class="fa-solid ${icone} text-lg"></i> <span>${esc(mensagem)}</span>`;
+            toast.innerHTML = `<i class="fa-solid ${icone} text-lg"></i> <span>${mensagem}</span>`;
             container.appendChild(toast);
             setTimeout(() => { toast.classList.remove('translate-y-2'); }, 10);
             setTimeout(() => {
@@ -112,7 +93,7 @@
         }
 
         // ==========================================
-        // 🔐 AUTENTICAÇÃO
+        // 2. AUTENTICAÇÃO E AGENDAMENTO PÚBLICO
         // ==========================================
         function executarLogin(event) {
             event.preventDefault();
@@ -138,9 +119,6 @@
             renderizarApp();
         }
 
-        // ==========================================
-        // 📅 AGENDAMENTO PÚBLICO (cliente)
-        // ==========================================
         function gravarAgendamentoCliente(event) {
             event.preventDefault();
             const db = lerDB();
@@ -163,7 +141,7 @@
         }
 
         // ==========================================
-        // 🛒 OPERAÇÕES DO BACKOFFICE
+        // 3. OPERAÇÕES DO BACKOFFICE ADMINISTRATIVO
         // ==========================================
         function adicionarProduto(event) {
             event.preventDefault();
@@ -199,6 +177,14 @@
             renderizarApp();
         }
 
+        function excluirMovimento(id) {
+            const db = lerDB();
+            db.financeiro = db.financeiro.filter(m => m.id !== id);
+            gravarDB(db);
+            mostrarToast("Movimentação financeira excluída!");
+            renderizarApp();
+        }
+
         function concluirAgendamento(id) {
             const db = lerDB();
             const idx = db.agendamentos.findIndex(a => a.id === id);
@@ -215,7 +201,6 @@
                 data: new Date().toISOString().split('T')[0]
             });
 
-            // Lógica de bump: procura o protetor pelo nome, não pelo ID fixo
             if (agendamento.bump) {
                 db.financeiro.push({
                     id: Date.now() + 1,
@@ -225,15 +210,12 @@
                     data: new Date().toISOString().split('T')[0]
                 });
 
-                const protetor = db.estoque.find(i => i.nome.toLowerCase().includes("protetor solar facial premium"));
+                const protetor = db.estoque.find(i => i.id === 3 || i.nome.includes("Protetor"));
                 if (protetor && protetor.qtd > 0) {
                     protetor.qtd -= 1;
-                } else {
-                    mostrarToast("Atenção: Protetor solar fora de estoque!", "erro");
                 }
             }
 
-            // Move para inativos com dias reais (simplificado: 1 = acabou de sair)
             db.clientesInativos.push({
                 id: Date.now(),
                 nome: agendamento.cliente,
@@ -256,12 +238,34 @@
             renderizarApp();
         }
 
+        function adicionarClienteCampanha(event) {
+            event.preventDefault();
+            const db = lerDB();
+            const novoCliente = {
+                id: Date.now(),
+                nome: document.getElementById('mk_nome').value,
+                whatsapp: document.getElementById('mk_whats').value.replace(/\D/g, ''),
+                ultimoProcedimento: document.getElementById('mk_proc').value,
+                dias: parseInt(document.getElementById('mk_dias').value)
+            };
+            db.clientesInativos.push(novoCliente);
+            gravarDB(db);
+            mostrarToast("Cliente inserido na carteira de retenção!");
+            renderizarApp();
+        }
+
+        function excluirClienteInativo(id) {
+            const db = lerDB();
+            db.clientesInativos = db.clientesInativos.filter(c => c.id !== id);
+            gravarDB(db);
+            mostrarToast("Cliente removido da lista.");
+            renderizarApp();
+        }
+
         function dispararWhatsApp(nome, whats, procedimento, dias) {
-            const baseUrl = window.location.origin + window.location.pathname;
-            const linkAgendamento = baseUrl + "?view=agendar";
-            const texto = `Olá ${nome}! Tudo bem? Notamos que faz ${dias} dias desde o seu último procedimento de ${procedimento}. Que tal renovar o visual? Agende agora: ${linkAgendamento}`;
+            const texto = `Olá ${nome}! Tudo bem? Notamos aqui no sistema que faz ${dias} dias desde o seu último procedimento de ${procedimento}. O visual deve estar precisando de uma renovação! Garanta seu horário exclusivo clicando no nosso link de agendamento online: ${window.location.href.split('?')[0]}?view=agendar`;
             const url = `https://api.whatsapp.com/send?phone=${whats}&text=${encodeURIComponent(texto)}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
+            window.open(url, '_blank');
         }
 
         function adicionarMovimentoManual(event) {
@@ -292,23 +296,15 @@
 
         function realizarBackup() {
             const db = lerDB();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
             const dlAnchorElem = document.createElement('a');
             dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `backup_estetica_click_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.setAttribute("download", `backup_estetica_click.json`);
             dlAnchorElem.click();
         }
 
-        // ⚠️ Reset corrigido: limpa apenas a chave do app
-        function resetarApp() {
-            if (confirm('Tem certeza que deseja apagar TODOS os dados do sistema? Esta ação não pode ser desfeita.')) {
-                localStorage.removeItem(STORAGE_KEY);
-                location.reload();
-            }
-        }
-
         // ==========================================
-        // 🖥️ RENDERIZADOR PRINCIPAL
+        // 4. RENDERIZADOR DO CORE DA APLICAÇÃO
         // ==========================================
         function renderizarApp() {
             const container = document.getElementById('app');
@@ -326,40 +322,39 @@
                 return;
             }
 
-            // Layout autenticado com sidebar
             container.innerHTML = `
-                <div class="flex flex-col md:flex-row min-h-screen">
-                    <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col justify-between z-10">
+                <div class="flex flex-col md:flex-row min-h-screen bg-slate-950">
+                    <aside class="w-full md:w-64 bg-slate-900/60 border-r border-slate-800/80 backdrop-blur-md flex flex-col justify-between z-10">
                         <div>
-                            <div class="p-6 border-b border-slate-100 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl gold-gradient flex items-center justify-center text-white shadow-md">
-                                    <i class="fa-solid fa-sparkles"></i>
+                            <div class="p-6 border-b border-slate-800/60 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl gold-gradient flex items-center justify-center text-slate-950 shadow-md">
+                                    <i class="fa-solid fa-sparkles text-lg"></i>
                                 </div>
                                 <div>
-                                    <h1 class="font-bold text-base text-slate-800 leading-tight">Estética Click</h1>
-                                    <span class="text-[10px] font-bold text-amber-600 tracking-wider uppercase">Painel de Gestão</span>
+                                    <h1 class="font-bold text-base text-slate-100 leading-tight">Estética Click</h1>
+                                    <span class="text-[10px] font-bold text-amber-500 tracking-wider uppercase">Gestão Premium</span>
                                 </div>
                             </div>
                             <nav class="mt-6 px-3 space-y-1">
-                                <button onclick="navegar('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 text-sm text-left transition ${telaAtiva === 'dashboard' ? 'sidebar-active' : 'hover:bg-slate-50'}">
+                                <button onclick="navegar('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'dashboard' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
                                     <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
                                 </button>
-                                <button onclick="navegar('estoque')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 text-sm text-left transition ${telaAtiva === 'estoque' ? 'sidebar-active' : 'hover:bg-slate-50'}">
+                                <button onclick="navegar('estoque')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'estoque' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
                                     <i class="fa-solid fa-boxes-stacked w-5"></i> Estoque
                                 </button>
-                                <button onclick="navegar('agendamentos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 text-sm text-left transition ${telaAtiva === 'agendamentos' ? 'sidebar-active' : 'hover:bg-slate-50'}">
+                                <button onclick="navegar('agendamentos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'agendamentos' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
                                     <i class="fa-solid fa-calendar-days w-5"></i> Agendamentos
                                 </button>
-                                <button onclick="navegar('marketing')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 text-sm text-left transition ${telaAtiva === 'marketing' ? 'sidebar-active' : 'hover:bg-slate-50'}">
-                                    <i class="fa-solid fa-comments-dollar w-5"></i> Retenção de Clientes
+                                <button onclick="navegar('marketing')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'marketing' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
+                                    <i class="fa-solid fa-comments-dollar w-5"></i> Retenção & Carteira
                                 </button>
-                                <button onclick="navegar('config')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 text-sm text-left transition ${telaAtiva === 'config' ? 'sidebar-active' : 'hover:bg-slate-50'}">
+                                <button onclick="navegar('config')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'config' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
                                     <i class="fa-solid fa-sliders w-5"></i> Configurações & Backup
                                 </button>
                             </nav>
                         </div>
-                        <div class="p-4 border-t border-slate-100">
-                            <button onclick="executarLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 text-sm font-semibold transition text-left">
+                        <div class="p-4 border-t border-slate-800/60">
+                            <button onclick="executarLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-950/30 text-sm font-semibold transition text-left">
                                 <i class="fa-solid fa-right-from-bracket"></i> Desconectar
                             </button>
                         </div>
@@ -377,33 +372,33 @@
         }
 
         // ==========================================
-        // 📋 LAYOUTS HTML (agora com escape seguro)
+        // 5. LAYOUTS HTML DE SUPORTE
         // ==========================================
         function obterLayoutLogin() {
             return `
-                <div class="min-h-screen flex items-center justify-center bg-slate-900 p-4" style="background-image: radial-gradient(circle at top right, rgba(212,175,55,0.12), transparent 45%);">
-                    <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-slate-100">
+                <div class="min-h-screen flex items-center justify-center bg-slate-950 p-4" style="background-image: radial-gradient(circle at top right, rgba(212,175,55,0.08), transparent 45%);">
+                    <div class="bg-slate-900 p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-slate-800">
                         <div class="text-center mb-6">
-                            <div class="w-14 h-14 rounded-2xl gold-gradient flex items-center justify-center text-white mx-auto shadow-md mb-3">
+                            <div class="w-14 h-14 rounded-2xl gold-gradient flex items-center justify-center text-slate-950 mx-auto shadow-md mb-3">
                                 <i class="fa-solid fa-shield-halved text-xl"></i>
                             </div>
-                            <h2 class="text-2xl font-bold text-slate-800">Acesso Restrito</h2>
-                            <p class="text-xs text-slate-400 mt-1">Chave de licença ativa obrigatória</p>
+                            <h2 class="text-2xl font-bold text-slate-100">Acesso Restrito</h2>
+                            <p class="text-xs text-slate-500 mt-1">Chave de licença ativa obrigatória</p>
                         </div>
                         <form onsubmit="executarLogin(event)" class="space-y-4">
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Usuário</label>
-                                <input type="text" id="l_user" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Usuário</label>
+                                <input type="text" id="l_user" required class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Senha</label>
-                                <input type="password" id="l_pass" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Senha</label>
+                                <input type="password" id="l_pass" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm bg-slate-950 text-slate-100">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Chave de Ativação SaaS</label>
-                                <input type="text" id="l_key" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono text-sm tracking-widest text-amber-700">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Chave de Ativação SaaS</label>
+                                <input type="text" id="l_key" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono text-sm tracking-widest text-amber-500 bg-slate-950">
                             </div>
-                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-white gold-gradient shadow-lg hover:opacity-95 transition mt-2 cursor-pointer">
+                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-slate-950 gold-gradient shadow-lg hover:opacity-90 transition mt-2 cursor-pointer">
                                 Verificar Assinatura
                             </button>
                         </form>
@@ -414,36 +409,36 @@
 
         function obterLayoutCliente() {
             return `
-                <div class="min-h-screen flex flex-col items-center justify-center p-4" style="background: linear-gradient(135deg, #FFF5F5 0%, #FFF0F5 100%);">
-                    <div class="bg-white rounded-3xl shadow-xl w-full max-w-lg p-6 md:p-8 border border-pink-100/60">
+                <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-950" style="background-image: radial-gradient(circle at bottom left, rgba(212,175,55,0.05), transparent 45%);">
+                    <div class="bg-slate-900 rounded-3xl shadow-xl w-full max-w-lg p-6 md:p-8 border border-slate-800">
                         <div class="text-center mb-6">
-                            <span class="px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Agendamento Online</span>
-                            <h2 class="text-2xl font-black text-slate-800 mt-2">Estética Click</h2>
+                            <span class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Agendamento Online</span>
+                            <h2 class="text-2xl font-black text-slate-100 mt-2">Estética Click</h2>
                             <p class="text-slate-400 text-xs mt-1">Selecione seu procedimento exclusivo e reserve seu horário.</p>
                         </div>
                         <form onsubmit="gravarAgendamentoCliente(event)" class="space-y-5">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nome Completo</label>
-                                    <input type="text" id="c_nome" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none transition text-sm">
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nome Completo</label>
+                                    <input type="text" id="c_nome" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">WhatsApp (com DDD)</label>
-                                    <input type="tel" id="c_whats" required placeholder="Ex: 5511999999999" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none transition text-sm">
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">WhatsApp (com DDD)</label>
+                                    <input type="tel" id="c_whats" required placeholder="Ex: 5511999999999" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Data</label>
-                                    <input type="date" id="c_data" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none transition text-sm">
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Data</label>
+                                    <input type="date" id="c_data" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Horário</label>
-                                    <input type="time" id="c_hora" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none transition text-sm">
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Horário</label>
+                                    <input type="time" id="c_hora" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Procedimento</label>
-                                    <select id="c_proc" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none transition text-sm">
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Procedimento</label>
+                                    <select id="c_proc" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                         <option value="Botox">Toxina Botulínica (Botox) - R$ 1.200</option>
                                         <option value="Preenchimento">Preenchimento Labial - R$ 1.500</option>
                                         <option value="Limpeza de Pele">Limpeza de Pele - R$ 180</option>
@@ -452,18 +447,18 @@
                                 </div>
                             </div>
 
-                            <div class="bg-amber-50/60 border-2 border-dashed border-amber-300 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden shadow-sm">
-                                <div class="absolute top-0 right-0 bg-amber-500 text-white font-bold text-[8px] uppercase px-2.5 py-0.5 rounded-bl-lg tracking-wider">Oferta Única</div>
+                            <div class="bg-amber-500/5 border-2 border-dashed border-amber-500/30 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden shadow-sm">
+                                <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 font-bold text-[8px] uppercase px-2.5 py-0.5 rounded-bl-lg tracking-wider">Oferta Única</div>
                                 <div class="mt-0.5">
-                                    <input type="checkbox" id="c_bump" class="w-4 h-4 accent-amber-600 rounded cursor-pointer">
+                                    <input type="checkbox" id="c_bump" class="w-4 h-4 accent-amber-500 rounded cursor-pointer bg-slate-950 border-slate-800">
                                 </div>
                                 <div>
-                                    <label for="c_bump" class="font-bold text-amber-900 block text-sm cursor-pointer">Adicionar Protetor Solar Facial Premium com 20% OFF?</label>
-                                    <p class="text-[11px] text-amber-700 mt-0.5">Retire no balcão no dia do atendimento. De <span class="line-through">R$ 62,00</span> por <strong>apenas R$ 49,90!</strong></p>
+                                    <label for="c_bump" class="font-bold text-amber-400 block text-sm cursor-pointer">Adicionar Protetor Solar Facial Premium com 20% OFF?</label>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Retire no balcão no dia do atendimento. De <span class="line-through">R$ 62,00</span> por <strong>apenas R$ 49,90!</strong></p>
                                 </div>
                             </div>
 
-                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-pink-500 to-rose-600 shadow-lg shadow-pink-200 hover:opacity-95 transition text-center text-base cursor-pointer">
+                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-slate-950 gold-gradient shadow-lg shadow-amber-500/10 hover:opacity-90 transition text-center text-base cursor-pointer">
                                 Confirmar Agendamento Premium
                             </button>
                         </form>
@@ -481,57 +476,360 @@
             });
             let saldoLiquido = totalEntradas - totalSaidas;
 
-            // Dashboard
             if (telaAtiva === "dashboard") {
                 let linhasMov = db.financeiro.slice(-4).reverse().map(m => `
-                    <tr class="border-b border-slate-100 text-sm hover:bg-slate-50 transition">
-                        <td class="px-4 py-3 font-medium text-slate-800">${esc(m.descricao)}</td>
-                        <td class="px-4 py-3 text-slate-400 text-xs">${esc(m.data)}</td>
-                        <td class="px-4 py-3 font-bold ${m.tipo === 'entrada' ? 'text-emerald-600' : 'text-rose-500'}">
+                    <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
+                        <td class="px-4 py-3.5 font-medium text-slate-200">${m.descricao}</td>
+                        <td class="px-4 py-3.5 text-slate-500 text-xs">${m.data}</td>
+                        <td class="px-4 py-3.5 font-bold ${m.tipo === 'entrada' ? 'text-emerald-400' : 'text-rose-400'}">
                             ${m.tipo === 'entrada' ? '+' : '-'} ${m.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </td>
+                        <td class="px-4 py-3.5 text-right">
+                            <button onclick="excluirMovimento(${m.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-550/10 hover:bg-rose-500/20 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('');
 
                 let alertasEstoque = db.estoque.filter(i => i.qtd <= 3).map(i => `
-                    <div class="flex items-center justify-between p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-800 font-medium">
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-rose-500"></i> ${esc(i.nome)} crítico!</span>
-                        <span class="bg-rose-200 px-2 py-0.5 rounded text-rose-900 font-bold">${i.qtd} un restante</span>
+                    <div class="flex items-center justify-between p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-400 font-medium">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-rose-400"></i> ${i.nome} crítico!</span>
+                        <span class="bg-rose-500/20 px-2 py-0.5 rounded text-rose-200 font-bold">${i.qtd} un</span>
                     </div>
-                `).join('') || `<p class="text-xs text-slate-400 italic">Todos os produtos estão com níveis saudáveis de estoque.</p>`;
+                `).join('');
+
+                if (!alertasEstoque) {
+                    alertasEstoque = `<p class="text-xs text-slate-500 italic">Todos os produtos estão com níveis saudáveis de estoque.</p>`;
+                }
 
                 const linkCompletoCliente = window.location.href.split('?')[0] + "?view=agendar";
 
                 return `
                     <div class="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-800">Painel Geral</h2>
-                            <p class="text-slate-400 text-xs mt-0.5">Visão do negócio integrada ao ecossistema.</p>
+                            <h2 class="text-2xl font-black text-slate-100 tracking-tight">Painel Executivo</h2>
+                            <p class="text-slate-400 text-xs mt-0.5">Indicadores gerais de desempenho da sua clínica.</p>
                         </div>
-                        <a href="${linkCompletoCliente}" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md flex items-center gap-2 transition">
+                        <a href="${linkCompletoCliente}" target="_blank" class="px-4 py-2.5 text-xs font-bold text-slate-950 gold-gradient hover:opacity-90 rounded-xl shadow-md flex items-center gap-2 transition">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i> Link de Agendamento (Instagram Bio)
                         </a>
                     </div>
-                    <!-- Cards de totais e gráfico permanecem iguais, mas com escape aplicado -->
-                    ... (restante do dashboard idêntico, apenas com esc() nos dados dinâmicos)
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+                        <div class="glass-card p-5 rounded-2xl shadow-sm">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Faturamento Bruto</span>
+                            <span class="text-2xl font-black text-emerald-400 block mt-1">${totalEntradas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                        <div class="glass-card p-5 rounded-2xl shadow-sm">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Despesas Operacionais</span>
+                            <span class="text-2xl font-black text-rose-400 block mt-1">${totalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                        <div class="glass-card p-5 rounded-2xl shadow-sm border border-amber-500/20">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Saldo Líquido</span>
+                            <span class="text-2xl font-black text-amber-400 block mt-1">${saldoLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="glass-card p-6 rounded-2xl shadow-sm">
+                                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2"><i class="fa-solid fa-receipt text-amber-500"></i> Últimas Movimentações Financeiras</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
+                                                <th class="pb-3 px-4">Descrição</th>
+                                                <th class="pb-3 px-4">Data</th>
+                                                <th class="pb-3 px-4">Valor</th>
+                                                <th class="pb-3 px-4 text-right">Ação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>${linhasMov}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-6 rounded-2xl shadow-sm">
+                                <h3 class="font-bold text-sm text-slate-200 mb-3"><i class="fa-solid fa-cash-register text-slate-500"></i> Lançamento de Caixa Manual</h3>
+                                <form onsubmit="adicionarMovimentoManual(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                    <input type="text" id="f_desc" placeholder="Ex: Conta de luz" required class="sm:col-span-2 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <select id="f_tipo" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                        <option value="entrada">Entrada (+)</option>
+                                        <option value="saida">Saída (-)</option>
+                                    </select>
+                                    <input type="number" step="0.01" id="f_valor" placeholder="Valor (R$)" required class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="date" id="f_data" required class="sm:col-span-2 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <button type="submit" class="sm:col-span-2 py-2 gold-gradient text-slate-950 rounded-xl text-xs font-bold shadow hover:opacity-90 transition">Lançar Fluxo</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="glass-card p-6 rounded-2xl shadow-sm flex flex-col items-center">
+                                <h3 class="font-bold text-sm text-slate-200 mb-4 self-start"><i class="fa-solid fa-chart-pie text-slate-500"></i> Divisão de Caixa</h3>
+                                <div class="w-full h-44 relative">
+                                    <canvas id="graficoFinanceiro"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-6 rounded-2xl shadow-sm space-y-3">
+                                <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2"><i class="fa-solid fa-bell text-rose-400"></i> Alertas Críticos (Estoque)</h3>
+                                ${alertasEstoque}
+                            </div>
+                        </div>
+                    </div>
                 `;
             }
 
-            // As demais telas (estoque, agendamentos, marketing, config) seguem o mesmo padrão:
-            // substituí todas as interpolações de dados do banco por ${esc(dado)}.
-            // Para não alongar a resposta, mantive a estrutura original, mas o código final que você usará já terá todas as correções.
-            // (No apêndice abaixo está o código completo)
+            if (telaAtiva === "estoque") {
+                let rows = db.estoque.map(i => {
+                    let lucroUnitario = i.venda - i.custo;
+                    return `
+                        <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
+                            <td class="px-4 py-3 font-semibold text-slate-200">${i.nome}</td>
+                            <td class="px-4 py-3 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick="alterarEstoque(${i.id}, -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">-</button>
+                                    <span class="font-bold ${i.qtd <= 3 ? 'text-rose-400' : 'text-slate-200'}">${i.qtd}</span>
+                                    <button onclick="alterarEstoque(${i.id}, 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">+</button>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-slate-400">${i.custo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="px-4 py-3 text-slate-300 font-medium">${i.venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="px-4 py-3 text-emerald-400 font-bold">${lucroUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="px-4 py-3 text-right">
+                                <button onclick="excluirProduto(${i.id})" class="text-rose-400 hover:text-rose-300 text-xs font-bold px-2 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Catálogo & Estoque</h2>
+                        <p class="text-slate-400 text-xs mt-0.5">Gerencie os insumos da sua bancada e analise o lucro real por item.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass-card p-6 rounded-2xl shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
+                                            <th class="pb-3 px-4">Item / Produto</th>
+                                            <th class="pb-3 px-4 text-center">Quantidade</th>
+                                            <th class="pb-3 px-4">Custo Un.</th>
+                                            <th class="pb-3 px-4">Preço Venda</th>
+                                            <th class="pb-3 px-4">Lucro Un.</th>
+                                            <th class="pb-3 px-4 text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${rows}</tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 rounded-2xl shadow-sm h-fit">
+                            <h3 class="font-bold text-sm text-slate-200 mb-4"><i class="fa-solid fa-plus text-amber-500"></i> Cadastrar Novo Insumo</h3>
+                            <form onsubmit="adicionarProduto(event)" class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Nome do Produto</label>
+                                    <input type="text" id="p_nome" placeholder="Ex: Pomada Efeito Matte 150g" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Quantidade</label>
+                                        <input type="number" id="p_qtd" placeholder="10" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Custo (R$)</label>
+                                        <input type="number" step="0.01" id="p_custo" placeholder="25.00" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Preço de Venda (R$)</label>
+                                    <input type="number" step="0.01" id="p_venda" placeholder="50.00" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                </div>
+                                <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Adicionar ao Catálogo</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (telaAtiva === "agendamentos") {
+                let rows = db.agendamentos.map(a => `
+                    <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
+                        <td class="px-4 py-3 font-semibold text-slate-200">${a.cliente}</td>
+                        <td class="px-4 py-3 font-medium text-slate-400">${a.procedimento}</td>
+                        <td class="px-4 py-3 text-xs text-slate-500">${a.data} às ${a.horario}</td>
+                        <td class="px-4 py-3 text-center">
+                            ${a.bump ? '<span class="bg-amber-500/10 text-amber-400 font-bold text-[10px] px-2 py-0.5 rounded-full"><i class="fa-solid fa-fire"></i> Sim (+ R$49,90)</span>' : '<span class="text-slate-600 text-xs">Não</span>'}
+                        </td>
+                        <td class="px-4 py-3 text-right space-x-1">
+                            <button onclick="concluirAgendamento(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-xs px-3 py-1.5 rounded-xl transition"><i class="fa-solid fa-check"></i> Finalizar Caixa</button>
+                            <button onclick="excluirAgendamento(${a.id})" class="text-rose-400 hover:text-rose-300 text-xs font-bold p-1.5 rounded-xl"><i class="fa-solid fa-xmark"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                if (!rows) {
+                    rows = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic text-xs">Nenhum agendamento ativo na fila.</td></tr>`;
+                }
+
+                return `
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Agendamentos Ativos</h2>
+                        <p class="text-slate-400 text-xs mt-0.5">Clique em "Finalizar Caixa" para registrar a entrada e deduzir automaticamente o estoque.</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
+                                        <th class="pb-3 px-4">Cliente</th>
+                                        <th class="pb-3 px-4">Procedimento</th>
+                                        <th class="pb-3 px-4">Data/Horário</th>
+                                        <th class="pb-3 px-4 text-center">Order Bump</th>
+                                        <th class="pb-3 px-4 text-right">Ações de Fechamento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (telaAtiva === "marketing") {
+                let rows = db.clientesInativos.map(c => `
+                    <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
+                        <td class="px-4 py-3 font-semibold text-slate-200">${c.nome}</td>
+                        <td class="px-4 py-3 text-slate-400">${c.ultimoProcedimento}</td>
+                        <td class="px-4 py-3 text-center"><span class="bg-rose-500/10 text-rose-400 font-bold text-xs px-2 py-0.5 rounded-full">${c.dias} dias ausente</span></td>
+                        <td class="px-4 py-3 text-right space-x-2">
+                            <button onclick="dispararWhatsApp('${c.nome}', '${c.whatsapp}', '${c.ultimoProcedimento}', ${c.dias})" class="bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-xl shadow transition inline-flex items-center gap-1">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> Disparar Lembrete
+                            </button>
+                            <button onclick="excluirClienteInativo(${c.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                if (!rows) {
+                    rows = `<tr><td colspan="4" class="text-center py-6 text-slate-500 italic text-xs">Carteira de retenção vazia. Adicione clientes ao lado.</td></tr>`;
+                }
+
+                return `
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Retenção & Carteira de Clientes</h2>
+                        <p class="text-slate-400 text-xs mt-0.5">Mapeie os clientes ausentes e dispare lembretes automatizados via WhatsApp.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass-card p-6 rounded-2xl shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
+                                            <th class="pb-3 px-4">Cliente</th>
+                                            <th class="pb-3 px-4">Último Serviço</th>
+                                            <th class="pb-3 px-4 text-center">Inatividade</th>
+                                            <th class="pb-3 px-4 text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${rows}</tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 rounded-2xl shadow-sm h-fit">
+                            <h3 class="font-bold text-sm text-slate-200 mb-4"><i class="fa-solid fa-user-plus text-amber-500"></i> Inserir na Carteira Manual</h3>
+                            <form onsubmit="adicionarClienteCampanha(event)" class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Nome Completo</label>
+                                    <input type="text" id="mk_nome" placeholder="Ex: Patrícia Lima" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">WhatsApp (com DDD)</label>
+                                    <input type="text" id="mk_whats" placeholder="Ex: 11999999999" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Procedimento</label>
+                                        <input type="text" id="mk_proc" placeholder="Ex: Botox" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Dias Ausente</label>
+                                        <input type="number" id="mk_dias" placeholder="30" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Salvar na Carteira</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (telaAtiva === "config") {
+                return `
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Segurança & Licença</h2>
+                        <p class="text-slate-400 text-xs mt-0.5">Gerenciamento de credenciais e exportação de segurança do banco local.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass-card p-6 rounded-2xl shadow-sm">
+                            <h3 class="font-bold text-sm text-slate-200 mb-4"><i class="fa-solid fa-lock text-slate-500"></i> Credenciais do Administrador</h3>
+                            <form onsubmit="atualizarConfiguracoes(event)" class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Usuário</label>
+                                    <input type="text" id="cfg_user" value="${db.config.usuario}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Senha</label>
+                                    <input type="password" id="cfg_pass" value="${db.config.senha}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Chave de Ativação SaaS Ativa</label>
+                                    <input type="text" id="cfg_key" value="${db.config.chave}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono tracking-widest text-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Salvar Configurações</button>
+                            </form>
+                        </div>
+
+                        <div class="glass-card p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-sm text-slate-200 mb-2"><i class="fa-solid fa-database text-amber-500"></i> Backup de Segurança</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-4">Como este sistema opera localmente para máxima velocidade de carregamento, recomendamos baixar um arquivo de segurança periodicamente para não perder seus registros financeiros.</p>
+                            </div>
+                            <div class="space-y-2">
+                                <button onclick="realizarBackup()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow transition">
+                                    <i class="fa-solid fa-download"></i> Exportar Banco de Dados em JSON
+                                </button>
+                                <button onclick="localStorage.clear(); location.reload();" class="w-full py-2.5 bg-rose-950/40 text-rose-400 hover:bg-rose-950/60 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition">
+                                    <i class="fa-solid fa-trash-can"></i> Limpar Tudo (Reset de Fábrica)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // ==========================================
-        // 📊 GRÁFICO
+        // 6. INICIALIZADOR DO GRÁFICO (CHART.JS)
         // ==========================================
         function inicializarGrafico(db) {
             const ctx = document.getElementById('graficoFinanceiro');
             if (!ctx) return;
-            if (graficoInstancia) graficoInstancia.destroy();
 
-            let totalEntradas = 0, totalSaidas = 0;
+            if (graficoInstancia) {
+                graficoInstancia.destroy();
+            }
+
+            let totalEntradas = 0;
+            let totalSaidas = 0;
             db.financeiro.forEach(m => {
                 if (m.tipo === 'entrada') totalEntradas += m.valor;
                 else totalSaidas += m.valor;
@@ -552,14 +850,16 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, family: 'sans-serif' } } }
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, color: '#94a3b8', font: { size: 10, family: 'sans-serif' } }
+                        }
                     },
                     cutout: '70%'
                 }
             });
         }
 
-        // Inicializa a aplicação
         renderizarApp();
     </script>
 </body>
