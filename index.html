@@ -8,17 +8,100 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%); }
-        .sidebar-active { background-color: rgba(212, 175, 55, 0.08); color: #D4AF37; font-weight: bold; border-left: 4px solid #D4AF37; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        .gold-gradient { 
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 50%, #AA7C11 100%); 
+        }
+        .gold-gradient:hover {
+            background: linear-gradient(135deg, #E5C048 0%, #C9970C 50%, #BB8D1A 100%);
+        }
+        .gold-text { 
+            background: linear-gradient(135deg, #D4AF37, #B8860B); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text;
+        }
+        .sidebar-active { 
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.12) 0%, transparent 100%); 
+            color: #B8860B; 
+            font-weight: 700; 
+            border-left: 3px solid #D4AF37;
+        }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        .dark-glass {
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .hover-lift { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #E5C048 0%, #C9970C 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35);
+        }
+        .modal-overlay {
+            animation: fadeIn 0.2s ease-out;
+        }
+        .modal-content {
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .pulse-gold {
+            animation: pulseGold 2s infinite;
+        }
+        @keyframes pulseGold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(212, 175, 55, 0); }
+        }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #090d16; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        .glass-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.04); }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .table-row-hover:hover {
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.04) 0%, transparent 100%);
+        }
+        .badge-entrada {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .badge-saida {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        .input-gold:focus {
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
     </style>
 </head>
-<body class="bg-[#030712] font-sans text-slate-100 antialiased min-h-screen">
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen">
 
-    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-5 right-5 z-[60] space-y-3 pointer-events-none"></div>
+    <div id="modal-container" class="fixed inset-0 z-[55] hidden"></div>
     <div id="app" class="min-h-screen flex flex-col justify-between"></div>
 
     <script>
@@ -43,6 +126,12 @@
                 { id: 1, cliente: "Ana Silva", whatsapp: "5511999999999", procedimento: "Botox", data: "2026-06-09", horario: "14:00", bump: false },
                 { id: 2, cliente: "Maria Souza", whatsapp: "5511988888888", procedimento: "Limpeza de Pele", data: "2026-06-09", horario: "16:00", bump: true }
             ],
+            clientes: [
+                { id: 1, nome: "Ana Silva", whatsapp: "5511999999999", email: "ana@email.com", dataCadastro: "2026-01-15", historico: "Botox, Limpeza" },
+                { id: 2, nome: "Maria Souza", whatsapp: "5511988888888", email: "maria@email.com", dataCadastro: "2026-02-20", historico: "Limpeza de Pele" },
+                { id: 3, nome: "Juliana Ribeiro", whatsapp: "5511977777777", email: "ju@email.com", dataCadastro: "2026-03-10", historico: "Preenchimento" },
+                { id: 4, nome: "Carla Mendes", whatsapp: "5511966666666", email: "carla@email.com", dataCadastro: "2026-04-05", historico: "Limpeza de Pele" }
+            ],
             clientesInativos: [
                 { id: 1, nome: "Juliana Ribeiro", whatsapp: "5511977777777", ultimoProcedimento: "Preenchimento", dias: 45 },
                 { id: 2, nome: "Carla Mendes", whatsapp: "5511966666666", ultimoProcedimento: "Limpeza de Pele", dias: 32 }
@@ -57,18 +146,19 @@
         };
 
         function lerDB() {
-            if (!localStorage.getItem('estetica_click_db')) {
-                localStorage.setItem('estetica_click_db', JSON.stringify(DADOS_MOCK));
+            if (!localStorage.getItem('estetica_click_db_v2')) {
+                localStorage.setItem('estetica_click_db_v2', JSON.stringify(DADOS_MOCK));
             }
-            return JSON.parse(localStorage.getItem('estetica_click_db'));
+            return JSON.parse(localStorage.getItem('estetica_click_db_v2'));
         }
 
         function gravarDB(dados) {
-            localStorage.setItem('estetica_click_db', JSON.stringify(dados));
+            localStorage.setItem('estetica_click_db_v2', JSON.stringify(dados));
         }
 
         let telaAtiva = "dashboard";
         let graficoInstancia = null;
+        let itemEditando = null;
 
         function navegar(tela) {
             telaAtiva = tela;
@@ -79,17 +169,36 @@
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            toast.className = `p-4 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-3 transition-all duration-300 transform translate-y-2 pointer-events-auto min-w-[280px] ${
-                tipo === "sucesso" ? "bg-slate-900/90 border-emerald-500/50 text-emerald-400" : "bg-slate-900/90 border-rose-500/50 text-rose-400"
-            }`;
-            const icone = tipo === "sucesso" ? "fa-circle-check" : "fa-circle-exclamation";
+            const cores = tipo === "sucesso" 
+                ? "bg-emerald-50 border-emerald-300 text-emerald-800" 
+                : tipo === "aviso"
+                ? "bg-amber-50 border-amber-300 text-amber-800"
+                : "bg-rose-50 border-rose-300 text-rose-800";
+            const icone = tipo === "sucesso" ? "fa-circle-check" : tipo === "aviso" ? "fa-triangle-exclamation" : "fa-circle-exclamation";
+            toast.className = `p-4 rounded-2xl shadow-2xl border text-sm font-semibold flex items-center gap-3 transition-all duration-400 transform translate-y-4 opacity-0 pointer-events-auto min-w-[300px] ${cores}`;
             toast.innerHTML = `<i class="fa-solid ${icone} text-lg"></i> <span>${mensagem}</span>`;
             container.appendChild(toast);
-            setTimeout(() => { toast.classList.remove('translate-y-2'); }, 10);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
             setTimeout(() => {
                 toast.classList.add('opacity-0', '-translate-y-2');
-                setTimeout(() => { toast.remove(); }, 300);
-            }, 3500);
+                setTimeout(() => { toast.remove(); }, 400);
+            }, 4000);
+        }
+
+        function abrirModal(html) {
+            const modal = document.getElementById('modal-container');
+            modal.innerHTML = `<div class="modal-overlay absolute inset-0" onclick="fecharModal()"></div><div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto border border-slate-100">${html}</div>`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function fecharModal() {
+            const modal = document.getElementById('modal-container');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            itemEditando = null;
         }
 
         // ==========================================
@@ -122,11 +231,25 @@
         function gravarAgendamentoCliente(event) {
             event.preventDefault();
             const db = lerDB();
+            const nome = document.getElementById('c_nome').value;
+            const whats = document.getElementById('c_whats').value.replace(/\D/g, '');
             
+            let clienteExistente = db.clientes.find(c => c.whatsapp === whats || c.nome.toLowerCase() === nome.toLowerCase());
+            if (!clienteExistente) {
+                db.clientes.push({
+                    id: Date.now(),
+                    nome: nome,
+                    whatsapp: whats,
+                    email: "",
+                    dataCadastro: new Date().toISOString().split('T')[0],
+                    historico: document.getElementById('c_proc').value
+                });
+            }
+
             const novoAgendamento = {
                 id: Date.now(),
-                cliente: document.getElementById('c_nome').value,
-                whatsapp: document.getElementById('c_whats').value.replace(/\D/g, ''),
+                cliente: nome,
+                whatsapp: whats,
                 procedimento: document.getElementById('c_proc').value,
                 data: document.getElementById('c_data').value,
                 horario: document.getElementById('c_hora').value,
@@ -135,7 +258,6 @@
 
             db.agendamentos.push(novoAgendamento);
             gravarDB(db);
-            
             mostrarToast("Agendamento Premium Reservado com sucesso!");
             event.target.reset();
         }
@@ -170,697 +292,113 @@
         }
 
         function excluirProduto(id) {
+            abrirModal(`
+                <div class="p-8 text-center">
+                    <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-trash-can text-rose-500 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Excluir Produto</h3>
+                    <p class="text-slate-500 mb-6">Tem certeza que deseja remover este item do estoque? Esta ação não pode ser desfeita.</p>
+                    <div class="flex gap-3 justify-center">
+                        <button onclick="fecharModal()" class="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                        <button onclick="confirmarExcluirProduto(${id})" class="px-6 py-2.5 rounded-xl bg-rose-500 text-white font-semibold hover:bg-rose-600 transition shadow-lg shadow-rose-200">Excluir</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function confirmarExcluirProduto(id) {
             const db = lerDB();
             db.estoque = db.estoque.filter(i => i.id !== id);
             gravarDB(db);
+            fecharModal();
             mostrarToast("Produto removido do estoque.");
             renderizarApp();
         }
 
+        function editarProduto(id) {
+            const db = lerDB();
+            const item = db.estoque.find(i => i.id === id);
+            if (!item) return;
+            itemEditando = { tipo: 'produto', id: id };
+            abrirModal(`
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl gold-gradient flex items-center justify-center text-white">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Editar Produto</h3>
+                            <p class="text-xs text-slate-400">Altere os dados do item</p>
+                        </div>
+                    </div>
+                    <form onsubmit="salvarEdicaoProduto(event, ${id})" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Nome do Produto</label>
+                            <input type="text" id="edit_p_nome" value="${item.nome}" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none input-gold transition text-sm">
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Qtd</label>
+                                <input type="number" id="edit_p_qtd" value="${item.qtd}" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none input-gold transition text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Custo (R$)</label>
+                                <input type="number" step="0.01" id="edit_p_custo" value="${item.custo}" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none input-gold transition text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Venda (R$)</label>
+                                <input type="number" step="0.01" id="edit_p_venda" value="${item.venda}" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none input-gold transition text-sm">
+                            </div>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button type="button" onclick="fecharModal()" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                            <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl btn-gold font-semibold shadow-lg">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+
+        function salvarEdicaoProduto(event, id) {
+            event.preventDefault();
+            const db = lerDB();
+            const item = db.estoque.find(i => i.id === id);
+            if (item) {
+                item.nome = document.getElementById('edit_p_nome').value;
+                item.qtd = parseInt(document.getElementById('edit_p_qtd').value);
+                item.custo = parseFloat(document.getElementById('edit_p_custo').value);
+                item.venda = parseFloat(document.getElementById('edit_p_venda').value);
+                gravarDB(db);
+                fecharModal();
+                mostrarToast("Produto atualizado com sucesso!");
+                renderizarApp();
+            }
+        }
+
         function excluirMovimento(id) {
+            abrirModal(`
+                <div class="p-8 text-center">
+                    <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-trash-can text-rose-500 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Excluir Lançamento</h3>
+                    <p class="text-slate-500 mb-6">Tem certeza que deseja remover esta movimentação financeira? Esta ação não pode ser desfeita.</p>
+                    <div class="flex gap-3 justify-center">
+                        <button onclick="fecharModal()" class="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                        <button onclick="confirmarExcluirMovimento(${id})" class="px-6 py-2.5 rounded-xl bg-rose-500 text-white font-semibold hover:bg-rose-600 transition shadow-lg shadow-rose-200">Excluir</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function confirmarExcluirMovimento(id) {
             const db = lerDB();
             db.financeiro = db.financeiro.filter(m => m.id !== id);
             gravarDB(db);
+            fecharModal();
             mostrarToast("Movimentação financeira excluída!");
             renderizarApp();
         }
 
-        function concluirAgendamento(id) {
-            const db = lerDB();
-            const idx = db.agendamentos.findIndex(a => a.id === id);
-            if (idx === -1) return;
-            
-            const agendamento = db.agendamentos[idx];
-            const valorBase = PRECOS_PROCEDIMENTOS[agendamento.procedimento] || 100.00;
-            
-            db.financeiro.push({
-                id: Date.now(),
-                descricao: `Procedimento ${agendamento.procedimento} - ${agendamento.cliente}`,
-                tipo: "entrada",
-                valor: valorBase,
-                data: new Date().toISOString().split('T')[0]
-            });
-
-            if (agendamento.bump) {
-                db.financeiro.push({
-                    id: Date.now() + 1,
-                    descricao: `Venda Order Bump - Protetor Solar (${agendamento.cliente})`,
-                    tipo: "entrada",
-                    valor: 49.90,
-                    data: new Date().toISOString().split('T')[0]
-                });
-
-                const protetor = db.estoque.find(i => i.id === 3 || i.nome.includes("Protetor"));
-                if (protetor && protetor.qtd > 0) {
-                    protetor.qtd -= 1;
-                }
-            }
-
-            db.clientesInativos.push({
-                id: Date.now(),
-                nome: agendamento.cliente,
-                whatsapp: agendamento.whatsapp,
-                ultimoProcedimento: agendamento.procedimento,
-                dias: 1
-            });
-
-            db.agendamentos.splice(idx, 1);
-            gravarDB(db);
-            mostrarToast("Atendimento finalizado e computado no caixa!");
-            renderizarApp();
-        }
-
-        function excluirAgendamento(id) {
-            const db = lerDB();
-            db.agendamentos = db.agendamentos.filter(a => a.id !== id);
-            gravarDB(db);
-            mostrarToast("Agendamento removido.");
-            renderizarApp();
-        }
-
-        function adicionarClienteCampanha(event) {
-            event.preventDefault();
-            const db = lerDB();
-            const novoCliente = {
-                id: Date.now(),
-                nome: document.getElementById('mk_nome').value,
-                whatsapp: document.getElementById('mk_whats').value.replace(/\D/g, ''),
-                ultimoProcedimento: document.getElementById('mk_proc').value,
-                dias: parseInt(document.getElementById('mk_dias').value)
-            };
-            db.clientesInativos.push(novoCliente);
-            gravarDB(db);
-            mostrarToast("Cliente inserido na carteira de retenção!");
-            renderizarApp();
-        }
-
-        function excluirClienteInativo(id) {
-            const db = lerDB();
-            db.clientesInativos = db.clientesInativos.filter(c => c.id !== id);
-            gravarDB(db);
-            mostrarToast("Cliente removido da lista.");
-            renderizarApp();
-        }
-
-        function dispararWhatsApp(nome, whats, procedimento, dias) {
-            const texto = `Olá ${nome}! Tudo bem? Notamos aqui no sistema que faz ${dias} dias desde o seu último procedimento de ${procedimento}. O visual deve estar precisando de uma renovação! Garanta seu horário exclusivo clicando no nosso link de agendamento online: ${window.location.href.split('?')[0]}?view=agendar`;
-            const url = `https://api.whatsapp.com/send?phone=${whats}&text=${encodeURIComponent(texto)}`;
-            window.open(url, '_blank');
-        }
-
-        function adicionarMovimentoManual(event) {
-            event.preventDefault();
-            const db = lerDB();
-            db.financeiro.push({
-                id: Date.now(),
-                descricao: document.getElementById('f_desc').value,
-                tipo: document.getElementById('f_tipo').value,
-                valor: parseFloat(document.getElementById('f_valor').value),
-                data: document.getElementById('f_data').value
-            });
-            gravarDB(db);
-            mostrarToast("Movimentação de caixa lançada!");
-            renderizarApp();
-        }
-
-        function atualizarConfiguracoes(event) {
-            event.preventDefault();
-            const db = lerDB();
-            db.config.usuario = document.getElementById('cfg_user').value;
-            db.config.senha = document.getElementById('cfg_pass').value;
-            db.config.chave = document.getElementById('cfg_key').value;
-            gravarDB(db);
-            mostrarToast("Configurações atualizadas com sucesso!");
-            renderizarApp();
-        }
-
-        function realizarBackup() {
-            const db = lerDB();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `backup_estetica_click.json`);
-            dlAnchorElem.click();
-        }
-
-        // ==========================================
-        // 4. RENDERIZADOR DO CORE DA APLICAÇÃO
-        // ==========================================
-        function renderizarApp() {
-            const container = document.getElementById('app');
-            const urlParams = new URLSearchParams(window.location.search);
-            const modoPublico = urlParams.get('view') === 'agendar';
-            const db = lerDB();
-
-            if (modoPublico) {
-                container.innerHTML = obterLayoutCliente();
-                return;
-            }
-
-            if (!db.config.autenticado) {
-                container.innerHTML = obterLayoutLogin();
-                return;
-            }
-
-            container.innerHTML = `
-                <div class="flex flex-col md:flex-row min-h-screen bg-[#030712]">
-                    <aside class="w-full md:w-64 bg-slate-900/40 border-r border-slate-800/60 backdrop-blur-md flex flex-col justify-between z-10">
-                        <div>
-                            <div class="p-6 border-b border-slate-800/60 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl gold-gradient flex items-center justify-center text-slate-950 shadow-md">
-                                    <i class="fa-solid fa-sparkles text-lg"></i>
-                                </div>
-                                <div>
-                                    <h1 class="font-bold text-base text-slate-100 leading-tight">Estética Click</h1>
-                                    <span class="text-[10px] font-bold text-amber-500 tracking-wider uppercase">Gestão Premium</span>
-                                </div>
-                            </div>
-                            <nav class="mt-6 px-3 space-y-1">
-                                <button onclick="navegar('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'dashboard' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
-                                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
-                                </button>
-                                <button onclick="navegar('estoque')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'estoque' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
-                                    <i class="fa-solid fa-boxes-stacked w-5"></i> Estoque
-                                </button>
-                                <button onclick="navegar('agendamentos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'agendamentos' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
-                                    <i class="fa-solid fa-calendar-days w-5"></i> Agendamentos
-                                </button>
-                                <button onclick="navegar('marketing')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'marketing' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
-                                    <i class="fa-solid fa-comments-dollar w-5"></i> Retenção & Carteira
-                                </button>
-                                <button onclick="navegar('config')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'config' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
-                                    <i class="fa-solid fa-sliders w-5"></i> Configurações & Backup
-                                </button>
-                            </nav>
-                        </div>
-                        <div class="p-4 border-t border-slate-800/60">
-                            <button onclick="executarLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-950/20 text-sm font-semibold transition text-left">
-                                <i class="fa-solid fa-right-from-bracket"></i> Desconectar
-                            </button>
-                        </div>
-                    </aside>
-
-                    <main class="flex-1 p-6 md:p-8 overflow-y-auto">
-                        ${obterConteudoAdmin(db)}
-                    </main>
-                </div>
-            `;
-
-            if (telaAtiva === "dashboard") {
-                inicializarGrafico(db);
-            }
-        }
-
-        // ==========================================
-        // 5. LAYOUTS HTML DE SUPORTE (100% DARK FIXED)
-        // ==========================================
-        function obterLayoutLogin() {
-            return `
-                <div class="min-h-screen flex items-center justify-center bg-[#030712] p-4" style="background-image: radial-gradient(circle at top right, rgba(212,175,55,0.06), transparent 45%);">
-                    <div class="bg-slate-900/80 border border-slate-800/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-sm">
-                        <div class="text-center mb-6">
-                            <div class="w-14 h-14 rounded-2xl gold-gradient flex items-center justify-center text-slate-950 mx-auto shadow-md mb-3">
-                                <i class="fa-solid fa-shield-halved text-xl"></i>
-                            </div>
-                            <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Acesso Restrito</h2>
-                            <p class="text-xs text-slate-500 mt-1">Chave de licença ativa obrigatória</p>
-                        </div>
-                        <form onsubmit="executarLogin(event)" class="space-y-4">
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Usuário</label>
-                                <input type="text" id="l_user" required class="w-full px-4 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Senha</label>
-                                <input type="password" id="l_pass" required class="w-full px-4 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Chave de Ativação SaaS</label>
-                                <input type="text" id="l_key" required class="w-full px-4 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none font-mono text-sm tracking-widest text-amber-400">
-                            </div>
-                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-slate-950 gold-gradient shadow-lg hover:opacity-90 transition mt-2 cursor-pointer">
-                                Verificar Assinatura
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            `;
-        }
-
-        function obterLayoutCliente() {
-            return `
-                <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-[#030712]" style="background-image: radial-gradient(circle at bottom left, rgba(212,175,55,0.04), transparent 45%);">
-                    <div class="bg-slate-900/80 border border-slate-800/80 backdrop-blur-md rounded-3xl shadow-xl w-full max-w-lg p-6 md:p-8">
-                        <div class="text-center mb-6">
-                            <span class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Agendamento Online</span>
-                            <h2 class="text-2xl font-black text-slate-100 mt-2">Estética Click</h2>
-                            <p class="text-slate-400 text-xs mt-1">Selecione seu procedimento exclusivo e reserve seu horário.</p>
-                        </div>
-                        <form onsubmit="gravarAgendamentoCliente(event)" class="space-y-5">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nome Completo</label>
-                                    <input type="text" id="c_nome" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">WhatsApp (com DDD)</label>
-                                    <input type="tel" id="c_whats" required placeholder="Ex: 5511999999999" class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Data</label>
-                                    <input type="date" id="c_data" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Horário</label>
-                                    <input type="time" id="c_hora" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Procedimento</label>
-                                    <select id="c_proc" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
-                                        <option value="Botox">Toxina Botulínica (Botox) - R$ 1.200</option>
-                                        <option value="Preenchimento">Preenchimento Labial - R$ 1.500</option>
-                                        <option value="Limpeza de Pele">Limpeza de Pele - R$ 180</option>
-                                        <option value="Massagem">Drenagem Linfática - R$ 120</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="bg-amber-500/5 border-2 border-dashed border-amber-500/20 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 font-bold text-[8px] uppercase px-2.5 py-0.5 rounded-bl-lg tracking-wider">Oferta Única</div>
-                                <div class="mt-0.5">
-                                    <input type="checkbox" id="c_bump" class="w-4 h-4 accent-amber-500 rounded cursor-pointer bg-slate-950 border-slate-800">
-                                </div>
-                                <div>
-                                    <label for="c_bump" class="font-bold text-amber-400 block text-sm cursor-pointer">Adicionar Protetor Solar Facial Premium com 20% OFF?</label>
-                                    <p class="text-[11px] text-slate-400 mt-0.5">Retire no balcão no dia do atendimento. De <span class="line-through">R$ 62,00</span> por <strong>apenas R$ 49,90!</strong></p>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-slate-950 gold-gradient shadow-lg shadow-amber-500/5 hover:opacity-90 transition text-center text-base cursor-pointer">
-                                Confirmar Agendamento Premium
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            `;
-        }
-
-        function obterConteudoAdmin(db) {
-            let totalEntradas = 0;
-            let totalSaidas = 0;
-            db.financeiro.forEach(m => {
-                if (m.tipo === 'entrada') totalEntradas += m.valor;
-                else totalSaidas += m.valor;
-            });
-            let saldoLiquido = totalEntradas - totalSaidas;
-
-            if (telaAtiva === "dashboard") {
-                let linhasMov = db.financeiro.slice(-4).reverse().map(m => `
-                    <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
-                        <td class="px-4 py-3.5 font-medium text-slate-200">${m.descricao}</td>
-                        <td class="px-4 py-3.5 text-slate-500 text-xs">${m.data}</td>
-                        <td class="px-4 py-3.5 font-bold ${m.tipo === 'entrada' ? 'text-emerald-400' : 'text-rose-400'}">
-                            ${m.tipo === 'entrada' ? '+' : '-'} ${m.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </td>
-                        <td class="px-4 py-3.5 text-right">
-                            <button onclick="excluirMovimento(${m.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-500/5 hover:bg-rose-500/15 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                let alertasEstoque = db.estoque.filter(i => i.qtd <= 3).map(i => `
-                    <div class="flex items-center justify-between p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-400 font-medium">
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-rose-400"></i> ${i.nome} crítico!</span>
-                        <span class="bg-rose-500/20 px-2 py-0.5 rounded text-rose-200 font-bold">${i.qtd} un</span>
-                    </div>
-                `).join('');
-
-                if (!alertasEstoque) {
-                    alertasEstoque = `<p class="text-xs text-slate-500 italic">Todos os produtos estão com níveis saudáveis de estoque.</p>`;
-                }
-
-                const linkCompletoCliente = window.location.href.split('?')[0] + "?view=agendar";
-
-                return `
-                    <div class="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                        <div>
-                            <h2 class="text-2xl font-black text-slate-100 tracking-tight">Painel Geral</h2>
-                            <p class="text-slate-400 text-xs mt-0.5">Visão unificada das finanças e métricas do ecossistema.</p>
-                        </div>
-                        <a href="${linkCompletoCliente}" target="_blank" class="px-4 py-2.5 text-xs font-bold text-slate-950 gold-gradient hover:opacity-90 rounded-xl shadow-md flex items-center gap-2 transition">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Link de Agendamento (Instagram Bio)
-                        </a>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-                        <div class="glass-card p-5 rounded-2xl shadow-sm">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Faturamento Bruto</span>
-                            <span class="text-2xl font-black text-emerald-400 block mt-1">${totalEntradas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                        </div>
-                        <div class="glass-card p-5 rounded-2xl shadow-sm">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Despesas Operacionais</span>
-                            <span class="text-2xl font-black text-rose-400 block mt-1">${totalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                        </div>
-                        <div class="glass-card p-5 rounded-2xl shadow-sm border border-amber-500/10">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Saldo Líquido</span>
-                            <span class="text-2xl font-black text-amber-400 block mt-1">${saldoLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 space-y-6">
-                            <div class="glass-card p-6 rounded-2xl shadow-sm">
-                                <h3 class="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2"><i class="fa-solid fa-receipt text-amber-500"></i> Últimas Movimentações Financeiras</h3>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
-                                                <th class="pb-3 px-4">Descrição</th>
-                                                <th class="pb-3 px-4">Data</th>
-                                                <th class="pb-3 px-4">Valor</th>
-                                                <th class="pb-3 px-4 text-right">Ação</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>${linhasMov}</tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div class="glass-card p-6 rounded-2xl shadow-sm">
-                                <h3 class="font-bold text-sm text-slate-200 mb-3"><i class="fa-solid fa-cash-register text-slate-400"></i> Lançamento de Caixa Manual</h3>
-                                <form onsubmit="adicionarMovimentoManual(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                                    <input type="text" id="f_desc" placeholder="Ex: Conta de luz" required class="sm:col-span-2 px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                    <select id="f_tipo" class="px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                        <option value="entrada">Entrada (+)</option>
-                                        <option value="saida">Saída (-)</option>
-                                    </select>
-                                    <input type="number" step="0.01" id="f_valor" placeholder="Valor (R$)" required class="px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                    <input type="date" id="f_data" required class="sm:col-span-2 px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                    <button type="submit" class="sm:col-span-2 py-2 gold-gradient text-slate-950 rounded-xl text-xs font-bold shadow hover:opacity-90 transition">Lançar Fluxo</button>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="space-y-6">
-                            <div class="glass-card p-6 rounded-2xl shadow-sm flex flex-col items-center">
-                                <h3 class="font-bold text-sm text-slate-200 mb-4 self-start"><i class="fa-solid fa-chart-pie text-slate-500"></i> Divisão de Caixa</h3>
-                                <div class="w-full h-44 relative">
-                                    <canvas id="graficoFinanceiro"></canvas>
-                                </div>
-                            </div>
-
-                            <div class="glass-card p-6 rounded-2xl shadow-sm space-y-3">
-                                <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2"><i class="fa-solid fa-bell text-rose-400"></i> Alertas Críticos (Estoque)</h3>
-                                ${alertasEstoque}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (telaAtiva === "estoque") {
-                let rows = db.estoque.map(i => {
-                    let lucroUnitario = i.venda - i.custo;
-                    return `
-                        <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
-                            <td class="px-4 py-3 font-semibold text-slate-200">${i.nome}</td>
-                            <td class="px-4 py-3 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button onclick="alterarEstoque(${i.id}, -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">-</button>
-                                    <span class="font-bold ${i.qtd <= 3 ? 'text-rose-400' : 'text-slate-200'}">${i.qtd}</span>
-                                    <button onclick="alterarEstoque(${i.id}, 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">+</button>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3 text-slate-400">${i.custo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                            <td class="px-4 py-3 text-slate-300 font-medium">${i.venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                            <td class="px-4 py-3 text-emerald-400 font-bold">${lucroUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                            <td class="px-4 py-3 text-right">
-                                <button onclick="excluirProduto(${i.id})" class="text-rose-400 hover:text-rose-300 text-xs font-bold px-2 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-                return `
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Catálogo & Estoque</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Painel de gerenciamento de mercadorias com análise de lucro real por item.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 glass-card p-6 rounded-2xl shadow-sm">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
-                                            <th class="pb-3 px-4">Item / Produto</th>
-                                            <th class="pb-3 px-4 text-center">Quantidade</th>
-                                            <th class="pb-3 px-4">Custo Un.</th>
-                                            <th class="pb-3 px-4">Preço Venda</th>
-                                            <th class="pb-3 px-4">Lucro Un.</th>
-                                            <th class="pb-3 px-4 text-right">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>${rows}</tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="glass-card p-6 rounded-2xl shadow-sm h-fit">
-                            <h3 class="font-bold text-sm text-slate-200 mb-4"><i class="fa-solid fa-plus text-amber-500"></i> Cadastrar Novo Insumo</h3>
-                            <form onsubmit="adicionarProduto(event)" class="space-y-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Nome do Produto</label>
-                                    <input type="text" id="p_nome" placeholder="Ex: Pomada Efeito Matte 150g" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Quantidade</label>
-                                        <input type="number" id="p_qtd" placeholder="10" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Custo (R$)</label>
-                                        <input type="number" step="0.01" id="p_custo" placeholder="25.00" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Preço de Venda (R$)</label>
-                                    <input type="number" step="0.01" id="p_venda" placeholder="50.00" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                </div>
-                                <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Adicionar ao Catálogo</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (telaAtiva === "agendamentos") {
-                let rows = db.agendamentos.map(a => `
-                    <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
-                        <td class="px-4 py-3 font-semibold text-slate-200">${a.cliente}</td>
-                        <td class="px-4 py-3 font-medium text-slate-400">${a.procedimento}</td>
-                        <td class="px-4 py-3 text-xs text-slate-500">${a.data} às ${a.horario}</td>
-                        <td class="px-4 py-3 text-center">
-                            ${a.bump ? '<span class="bg-amber-500/10 text-amber-400 font-bold text-[10px] px-2 py-0.5 rounded-full"><i class="fa-solid fa-fire"></i> Sim (+ R$49,90)</span>' : '<span class="text-slate-600 text-xs">Não</span>'}
-                        </td>
-                        <td class="px-4 py-3 text-right space-x-1">
-                            <button onclick="concluirAgendamento(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-bold text-xs px-3 py-1.5 rounded-xl transition"><i class="fa-solid fa-check"></i> Finalizar Caixa</button>
-                            <button onclick="excluirAgendamento(${a.id})" class="text-rose-400 hover:text-rose-300 text-xs font-bold p-1.5 rounded-xl transition"><i class="fa-solid fa-xmark"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                if (!rows) {
-                    rows = `<tr><td colspan="5" class="text-center py-6 text-slate-500 italic text-xs">Nenhum agendamento ativo na fila.</td></tr>`;
-                }
-
-                return `
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Agendamentos Ativos</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Gerenciamento de atendimentos pendentes e conclusão de caixa.</p>
-                    </div>
-
-                    <div class="glass-card p-6 rounded-2xl shadow-sm">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
-                                        <th class="pb-3 px-4">Cliente</th>
-                                        <th class="pb-3 px-4">Procedimento</th>
-                                        <th class="pb-3 px-4">Data/Horário</th>
-                                        <th class="pb-3 px-4 text-center">Order Bump</th>
-                                        <th class="pb-3 px-4 text-right">Ações de Fechamento</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${rows}</tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (telaAtiva === "marketing") {
-                let rows = db.clientesInativos.map(c => `
-                    <tr class="border-b border-slate-800/40 text-sm hover:bg-slate-800/20 transition">
-                        <td class="px-4 py-3 font-semibold text-slate-200">${c.nome}</td>
-                        <td class="px-4 py-3 text-slate-400">${c.ultimoProcedimento}</td>
-                        <td class="px-4 py-3 text-center"><span class="bg-rose-500/10 text-rose-400 font-bold text-xs px-2 py-0.5 rounded-full">${c.dias} dias ausente</span></td>
-                        <td class="px-4 py-3 text-right space-x-2">
-                            <button onclick="dispararWhatsApp('${c.nome}', '${c.whatsapp}', '${c.ultimoProcedimento}', ${c.dias})" class="bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-xl shadow transition inline-flex items-center gap-1">
-                                <i class="fa-brands fa-whatsapp text-sm"></i> Disparar Lembrete
-                            </button>
-                            <button onclick="excluirClienteInativo(${c.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-500/5 hover:bg-rose-500/15 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                if (!rows) {
-                    rows = `<tr><td colspan="4" class="text-center py-6 text-slate-500 italic text-xs">Carteira de retenção vazia. Adicione clientes ao lado.</td></tr>`;
-                }
-
-                return `
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Retenção & Carteira de Clientes</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Mapeie a carteira de clientes, acompanhe o histórico e faça ações reativas via WhatsApp.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 glass-card p-6 rounded-2xl shadow-sm">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-500 border-b border-slate-800">
-                                            <th class="pb-3 px-4">Cliente</th>
-                                            <th class="pb-3 px-4">Último Serviço</th>
-                                            <th class="pb-3 px-4 text-center">Inatividade</th>
-                                            <th class="pb-3 px-4 text-right">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>${rows}</tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="glass-card p-6 rounded-2xl shadow-sm h-fit">
-                            <h3 class="font-bold text-sm text-slate-200 mb-4"><i class="fa-solid fa-user-plus text-amber-500"></i> Inserir na Carteira Manual</h3>
-                            <form onsubmit="adicionarClienteCampanha(event)" class="space-y-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Nome Completo</label>
-                                    <input type="text" id="mk_nome" placeholder="Ex: Patrícia Lima" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">WhatsApp (com DDD)</label>
-                                    <input type="text" id="mk_whats" placeholder="Ex: 11999999999" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Procedimento</label>
-                                        <input type="text" id="mk_proc" placeholder="Ex: Botox" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Dias Ausente</label>
-                                        <input type="number" id="mk_dias" placeholder="30" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                    </div>
-                                </div>
-                                <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Salvar na Carteira</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (telaAtiva === "config") {
-                return `
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-black text-slate-100 tracking-tight">Segurança & Licença</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Gerenciamento corporativo de acessos e utilitários do sistema.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="glass-card p-6 rounded-2xl shadow-sm">
-                            <h3 class="font-bold text-sm text-slate-200 mb-4"><i class="fa-solid fa-lock text-slate-500"></i> Credenciais do Administrador</h3>
-                            <form onsubmit="atualizarConfiguracoes(event)" class="space-y-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Usuário</label>
-                                    <input type="text" id="cfg_user" value="${db.config.usuario}" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Senha</label>
-                                    <input type="password" id="cfg_pass" value="${db.config.senha}" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Chave de Ativação SaaS Ativa</label>
-                                    <input type="text" id="cfg_key" value="${db.config.chave}" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs font-mono tracking-widest text-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
-                                </div>
-                                <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Salvar Configurações</button>
-                            </form>
-                        </div>
-
-                        <div class="glass-card p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-                            <div>
-                                <h3 class="font-bold text-sm text-slate-200 mb-2"><i class="fa-solid fa-database text-amber-500"></i> Backup de Segurança</h3>
-                                <p class="text-xs text-slate-400 leading-relaxed mb-4">Como este sistema opera localmente para máxima performance de carregamento, recomendamos baixar um arquivo de segurança periodicamente para não perder seus registros financeiros.</p>
-                            </div>
-                            <div class="space-y-2">
-                                <button onclick="realizarBackup()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow transition">
-                                    <i class="fa-solid fa-download"></i> Exportar Banco de Dados em JSON
-                                </button>
-                                <button onclick="localStorage.clear(); location.reload();" class="w-full py-2.5 bg-rose-950/20 text-rose-400 hover:bg-rose-950/40 border border-rose-500/20 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition">
-                                    <i class="fa-solid fa-trash-can"></i> Limpar Tudo (Reset de Fábrica)
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // ==========================================
-        // 6. INICIALIZADOR DO GRÁFICO (CHART.JS)
-        // ==========================================
-        function inicializarGrafico(db) {
-            const ctx = document.getElementById('graficoFinanceiro');
-            if (!ctx) return;
-
-            if (graficoInstancia) {
-                graficoInstancia.destroy();
-            }
-
-            let totalEntradas = 0;
-            let totalSaidas = 0;
-            db.financeiro.forEach(m => {
-                if (m.tipo === 'entrada') totalEntradas += m.valor;
-                else totalSaidas += m.valor;
-            });
-
-            graficoInstancia = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Faturamento', 'Despesas'],
-                    datasets: [{
-                        data: [totalEntradas, totalSaidas],
-                        backgroundColor: ['#D4AF37', '#F43F5E'],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { boxWidth: 12, color: '#94a3b8', font: { size: 10, family: 'sans-serif' } }
-                        }
-                    },
-                    cutout: '70%'
-                }
-            });
-        }
-
-        renderizarApp();
-    </script>
-</body>
-</html>
+        function editarMovimento(i
