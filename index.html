@@ -9,14 +9,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%); }
-        .sidebar-active { background-color: rgba(212, 175, 55, 0.1); color: #D4AF37; font-weight: bold; border-left: 4px solid #D4AF37; }
+        .sidebar-active { background-color: rgba(212, 175, 55, 0.08); color: #D4AF37; font-weight: bold; border-left: 4px solid #D4AF37; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        .glass-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.04); }
     </style>
 </head>
-<body class="bg-slate-950 font-sans text-slate-100 antialiased min-h-screen">
+<body class="bg-[#030712] font-sans text-slate-100 antialiased min-h-screen">
 
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 pointer-events-none"></div>
     <div id="app" class="min-h-screen flex flex-col justify-between"></div>
@@ -80,7 +80,7 @@
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = `p-4 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-3 transition-all duration-300 transform translate-y-2 pointer-events-auto min-w-[280px] ${
-                tipo === "sucesso" ? "bg-slate-900 border-emerald-500 text-emerald-400" : "bg-slate-900 border-rose-500 text-rose-400"
+                tipo === "sucesso" ? "bg-slate-900/90 border-emerald-500/50 text-emerald-400" : "bg-slate-900/90 border-rose-500/50 text-rose-400"
             }`;
             const icone = tipo === "sucesso" ? "fa-circle-check" : "fa-circle-exclamation";
             toast.innerHTML = `<i class="fa-solid ${icone} text-lg"></i> <span>${mensagem}</span>`;
@@ -323,8 +323,8 @@
             }
 
             container.innerHTML = `
-                <div class="flex flex-col md:flex-row min-h-screen bg-slate-950">
-                    <aside class="w-full md:w-64 bg-slate-900/60 border-r border-slate-800/80 backdrop-blur-md flex flex-col justify-between z-10">
+                <div class="flex flex-col md:flex-row min-h-screen bg-[#030712]">
+                    <aside class="w-full md:w-64 bg-slate-900/40 border-r border-slate-800/60 backdrop-blur-md flex flex-col justify-between z-10">
                         <div>
                             <div class="p-6 border-b border-slate-800/60 flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl gold-gradient flex items-center justify-center text-slate-950 shadow-md">
@@ -336,25 +336,25 @@
                                 </div>
                             </div>
                             <nav class="mt-6 px-3 space-y-1">
-                                <button onclick="navegar('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'dashboard' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
+                                <button onclick="navegar('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'dashboard' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
                                     <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
                                 </button>
-                                <button onclick="navegar('estoque')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'estoque' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
+                                <button onclick="navegar('estoque')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'estoque' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
                                     <i class="fa-solid fa-boxes-stacked w-5"></i> Estoque
                                 </button>
-                                <button onclick="navegar('agendamentos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'agendamentos' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
+                                <button onclick="navegar('agendamentos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'agendamentos' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
                                     <i class="fa-solid fa-calendar-days w-5"></i> Agendamentos
                                 </button>
-                                <button onclick="navegar('marketing')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'marketing' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
+                                <button onclick="navegar('marketing')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'marketing' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
                                     <i class="fa-solid fa-comments-dollar w-5"></i> Retenção & Carteira
                                 </button>
-                                <button onclick="navegar('config')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'config' ? 'sidebar-active' : 'hover:bg-slate-800/40 hover:text-slate-200'}">
+                                <button onclick="navegar('config')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 text-sm text-left transition ${telaAtiva === 'config' ? 'sidebar-active' : 'hover:bg-slate-800/30 hover:text-slate-200'}">
                                     <i class="fa-solid fa-sliders w-5"></i> Configurações & Backup
                                 </button>
                             </nav>
                         </div>
                         <div class="p-4 border-t border-slate-800/60">
-                            <button onclick="executarLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-950/30 text-sm font-semibold transition text-left">
+                            <button onclick="executarLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-950/20 text-sm font-semibold transition text-left">
                                 <i class="fa-solid fa-right-from-bracket"></i> Desconectar
                             </button>
                         </div>
@@ -372,31 +372,31 @@
         }
 
         // ==========================================
-        // 5. LAYOUTS HTML DE SUPORTE
+        // 5. LAYOUTS HTML DE SUPORTE (100% DARK FIXED)
         // ==========================================
         function obterLayoutLogin() {
             return `
-                <div class="min-h-screen flex items-center justify-center bg-slate-950 p-4" style="background-image: radial-gradient(circle at top right, rgba(212,175,55,0.08), transparent 45%);">
-                    <div class="bg-slate-900 p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-slate-800">
+                <div class="min-h-screen flex items-center justify-center bg-[#030712] p-4" style="background-image: radial-gradient(circle at top right, rgba(212,175,55,0.06), transparent 45%);">
+                    <div class="bg-slate-900/80 border border-slate-800/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-sm">
                         <div class="text-center mb-6">
                             <div class="w-14 h-14 rounded-2xl gold-gradient flex items-center justify-center text-slate-950 mx-auto shadow-md mb-3">
                                 <i class="fa-solid fa-shield-halved text-xl"></i>
                             </div>
-                            <h2 class="text-2xl font-bold text-slate-100">Acesso Restrito</h2>
+                            <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Acesso Restrito</h2>
                             <p class="text-xs text-slate-500 mt-1">Chave de licença ativa obrigatória</p>
                         </div>
                         <form onsubmit="executarLogin(event)" class="space-y-4">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Usuário</label>
-                                <input type="text" id="l_user" required class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
+                                <input type="text" id="l_user" required class="w-full px-4 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Senha</label>
-                                <input type="password" id="l_pass" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm bg-slate-950 text-slate-100">
+                                <input type="password" id="l_pass" required class="w-full px-4 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Chave de Ativação SaaS</label>
-                                <input type="text" id="l_key" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono text-sm tracking-widest text-amber-500 bg-slate-950">
+                                <input type="text" id="l_key" required class="w-full px-4 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none font-mono text-sm tracking-widest text-amber-400">
                             </div>
                             <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-slate-950 gold-gradient shadow-lg hover:opacity-90 transition mt-2 cursor-pointer">
                                 Verificar Assinatura
@@ -409,8 +409,8 @@
 
         function obterLayoutCliente() {
             return `
-                <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-950" style="background-image: radial-gradient(circle at bottom left, rgba(212,175,55,0.05), transparent 45%);">
-                    <div class="bg-slate-900 rounded-3xl shadow-xl w-full max-w-lg p-6 md:p-8 border border-slate-800">
+                <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-[#030712]" style="background-image: radial-gradient(circle at bottom left, rgba(212,175,55,0.04), transparent 45%);">
+                    <div class="bg-slate-900/80 border border-slate-800/80 backdrop-blur-md rounded-3xl shadow-xl w-full max-w-lg p-6 md:p-8">
                         <div class="text-center mb-6">
                             <span class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Agendamento Online</span>
                             <h2 class="text-2xl font-black text-slate-100 mt-2">Estética Click</h2>
@@ -420,25 +420,25 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nome Completo</label>
-                                    <input type="text" id="c_nome" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
+                                    <input type="text" id="c_nome" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">WhatsApp (com DDD)</label>
-                                    <input type="tel" id="c_whats" required placeholder="Ex: 5511999999999" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
+                                    <input type="tel" id="c_whats" required placeholder="Ex: 5511999999999" class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Data</label>
-                                    <input type="date" id="c_data" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
+                                    <input type="date" id="c_data" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Horário</label>
-                                    <input type="time" id="c_hora" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
+                                    <input type="time" id="c_hora" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Procedimento</label>
-                                    <select id="c_proc" required class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
+                                    <select id="c_proc" required class="w-full px-3 py-2.5 bg-[#030712] border border-slate-800 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none transition text-sm text-slate-100">
                                         <option value="Botox">Toxina Botulínica (Botox) - R$ 1.200</option>
                                         <option value="Preenchimento">Preenchimento Labial - R$ 1.500</option>
                                         <option value="Limpeza de Pele">Limpeza de Pele - R$ 180</option>
@@ -447,7 +447,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-amber-500/5 border-2 border-dashed border-amber-500/30 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden shadow-sm">
+                            <div class="bg-amber-500/5 border-2 border-dashed border-amber-500/20 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 font-bold text-[8px] uppercase px-2.5 py-0.5 rounded-bl-lg tracking-wider">Oferta Única</div>
                                 <div class="mt-0.5">
                                     <input type="checkbox" id="c_bump" class="w-4 h-4 accent-amber-500 rounded cursor-pointer bg-slate-950 border-slate-800">
@@ -458,7 +458,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-slate-950 gold-gradient shadow-lg shadow-amber-500/10 hover:opacity-90 transition text-center text-base cursor-pointer">
+                            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-slate-950 gold-gradient shadow-lg shadow-amber-500/5 hover:opacity-90 transition text-center text-base cursor-pointer">
                                 Confirmar Agendamento Premium
                             </button>
                         </form>
@@ -485,7 +485,7 @@
                             ${m.tipo === 'entrada' ? '+' : '-'} ${m.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </td>
                         <td class="px-4 py-3.5 text-right">
-                            <button onclick="excluirMovimento(${m.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-550/10 hover:bg-rose-500/20 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="excluirMovimento(${m.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-500/5 hover:bg-rose-500/15 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('');
@@ -506,8 +506,8 @@
                 return `
                     <div class="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-100 tracking-tight">Painel Executivo</h2>
-                            <p class="text-slate-400 text-xs mt-0.5">Indicadores gerais de desempenho da sua clínica.</p>
+                            <h2 class="text-2xl font-black text-slate-100 tracking-tight">Painel Geral</h2>
+                            <p class="text-slate-400 text-xs mt-0.5">Visão unificada das finanças e métricas do ecossistema.</p>
                         </div>
                         <a href="${linkCompletoCliente}" target="_blank" class="px-4 py-2.5 text-xs font-bold text-slate-950 gold-gradient hover:opacity-90 rounded-xl shadow-md flex items-center gap-2 transition">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i> Link de Agendamento (Instagram Bio)
@@ -523,7 +523,7 @@
                             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Despesas Operacionais</span>
                             <span class="text-2xl font-black text-rose-400 block mt-1">${totalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                         </div>
-                        <div class="glass-card p-5 rounded-2xl shadow-sm border border-amber-500/20">
+                        <div class="glass-card p-5 rounded-2xl shadow-sm border border-amber-500/10">
                             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Saldo Líquido</span>
                             <span class="text-2xl font-black text-amber-400 block mt-1">${saldoLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                         </div>
@@ -549,15 +549,15 @@
                             </div>
 
                             <div class="glass-card p-6 rounded-2xl shadow-sm">
-                                <h3 class="font-bold text-sm text-slate-200 mb-3"><i class="fa-solid fa-cash-register text-slate-500"></i> Lançamento de Caixa Manual</h3>
+                                <h3 class="font-bold text-sm text-slate-200 mb-3"><i class="fa-solid fa-cash-register text-slate-400"></i> Lançamento de Caixa Manual</h3>
                                 <form onsubmit="adicionarMovimentoManual(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                                    <input type="text" id="f_desc" placeholder="Ex: Conta de luz" required class="sm:col-span-2 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
-                                    <select id="f_tipo" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="text" id="f_desc" placeholder="Ex: Conta de luz" required class="sm:col-span-2 px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
+                                    <select id="f_tipo" class="px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                         <option value="entrada">Entrada (+)</option>
                                         <option value="saida">Saída (-)</option>
                                     </select>
-                                    <input type="number" step="0.01" id="f_valor" placeholder="Valor (R$)" required class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
-                                    <input type="date" id="f_data" required class="sm:col-span-2 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="number" step="0.01" id="f_valor" placeholder="Valor (R$)" required class="px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
+                                    <input type="date" id="f_data" required class="sm:col-span-2 px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                     <button type="submit" class="sm:col-span-2 py-2 gold-gradient text-slate-950 rounded-xl text-xs font-bold shadow hover:opacity-90 transition">Lançar Fluxo</button>
                                 </form>
                             </div>
@@ -606,7 +606,7 @@
                 return `
                     <div class="mb-6">
                         <h2 class="text-2xl font-black text-slate-100 tracking-tight">Catálogo & Estoque</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Gerencie os insumos da sua bancada e analise o lucro real por item.</p>
+                        <p class="text-slate-400 text-xs mt-0.5">Painel de gerenciamento de mercadorias com análise de lucro real por item.</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -633,21 +633,21 @@
                             <form onsubmit="adicionarProduto(event)" class="space-y-3">
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Nome do Produto</label>
-                                    <input type="text" id="p_nome" placeholder="Ex: Pomada Efeito Matte 150g" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="text" id="p_nome" placeholder="Ex: Pomada Efeito Matte 150g" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Quantidade</label>
-                                        <input type="number" id="p_qtd" placeholder="10" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                        <input type="number" id="p_qtd" placeholder="10" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Custo (R$)</label>
-                                        <input type="number" step="0.01" id="p_custo" placeholder="25.00" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                        <input type="number" step="0.01" id="p_custo" placeholder="25.00" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                     </div>
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Preço de Venda (R$)</label>
-                                    <input type="number" step="0.01" id="p_venda" placeholder="50.00" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="number" step="0.01" id="p_venda" placeholder="50.00" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                 </div>
                                 <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Adicionar ao Catálogo</button>
                             </form>
@@ -666,8 +666,8 @@
                             ${a.bump ? '<span class="bg-amber-500/10 text-amber-400 font-bold text-[10px] px-2 py-0.5 rounded-full"><i class="fa-solid fa-fire"></i> Sim (+ R$49,90)</span>' : '<span class="text-slate-600 text-xs">Não</span>'}
                         </td>
                         <td class="px-4 py-3 text-right space-x-1">
-                            <button onclick="concluirAgendamento(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-xs px-3 py-1.5 rounded-xl transition"><i class="fa-solid fa-check"></i> Finalizar Caixa</button>
-                            <button onclick="excluirAgendamento(${a.id})" class="text-rose-400 hover:text-rose-300 text-xs font-bold p-1.5 rounded-xl"><i class="fa-solid fa-xmark"></i></button>
+                            <button onclick="concluirAgendamento(${a.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-bold text-xs px-3 py-1.5 rounded-xl transition"><i class="fa-solid fa-check"></i> Finalizar Caixa</button>
+                            <button onclick="excluirAgendamento(${a.id})" class="text-rose-400 hover:text-rose-300 text-xs font-bold p-1.5 rounded-xl transition"><i class="fa-solid fa-xmark"></i></button>
                         </td>
                     </tr>
                 `).join('');
@@ -679,7 +679,7 @@
                 return `
                     <div class="mb-6">
                         <h2 class="text-2xl font-black text-slate-100 tracking-tight">Agendamentos Ativos</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Clique em "Finalizar Caixa" para registrar a entrada e deduzir automaticamente o estoque.</p>
+                        <p class="text-slate-400 text-xs mt-0.5">Gerenciamento de atendimentos pendentes e conclusão de caixa.</p>
                     </div>
 
                     <div class="glass-card p-6 rounded-2xl shadow-sm">
@@ -711,7 +711,7 @@
                             <button onclick="dispararWhatsApp('${c.nome}', '${c.whatsapp}', '${c.ultimoProcedimento}', ${c.dias})" class="bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-xl shadow transition inline-flex items-center gap-1">
                                 <i class="fa-brands fa-whatsapp text-sm"></i> Disparar Lembrete
                             </button>
-                            <button onclick="excluirClienteInativo(${c.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="excluirClienteInativo(${c.id})" class="text-rose-400 hover:text-rose-300 text-xs p-1.5 bg-rose-500/5 hover:bg-rose-500/15 rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('');
@@ -723,7 +723,7 @@
                 return `
                     <div class="mb-6">
                         <h2 class="text-2xl font-black text-slate-100 tracking-tight">Retenção & Carteira de Clientes</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Mapeie os clientes ausentes e dispare lembretes automatizados via WhatsApp.</p>
+                        <p class="text-slate-400 text-xs mt-0.5">Mapeie a carteira de clientes, acompanhe o histórico e faça ações reativas via WhatsApp.</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -748,20 +748,20 @@
                             <form onsubmit="adicionarClienteCampanha(event)" class="space-y-3">
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Nome Completo</label>
-                                    <input type="text" id="mk_nome" placeholder="Ex: Patrícia Lima" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="text" id="mk_nome" placeholder="Ex: Patrícia Lima" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">WhatsApp (com DDD)</label>
-                                    <input type="text" id="mk_whats" placeholder="Ex: 11999999999" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="text" id="mk_whats" placeholder="Ex: 11999999999" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Procedimento</label>
-                                        <input type="text" id="mk_proc" placeholder="Ex: Botox" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                        <input type="text" id="mk_proc" placeholder="Ex: Botox" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Dias Ausente</label>
-                                        <input type="number" id="mk_dias" placeholder="30" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                        <input type="number" id="mk_dias" placeholder="30" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                     </div>
                                 </div>
                                 <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Salvar na Carteira</button>
@@ -775,7 +775,7 @@
                 return `
                     <div class="mb-6">
                         <h2 class="text-2xl font-black text-slate-100 tracking-tight">Segurança & Licença</h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Gerenciamento de credenciais e exportação de segurança do banco local.</p>
+                        <p class="text-slate-400 text-xs mt-0.5">Gerenciamento corporativo de acessos e utilitários do sistema.</p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -784,15 +784,15 @@
                             <form onsubmit="atualizarConfiguracoes(event)" class="space-y-3">
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Usuário</label>
-                                    <input type="text" id="cfg_user" value="${db.config.usuario}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="text" id="cfg_user" value="${db.config.usuario}" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Senha</label>
-                                    <input type="password" id="cfg_pass" value="${db.config.senha}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-100">
+                                    <input type="password" id="cfg_pass" value="${db.config.senha}" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-100">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Chave de Ativação SaaS Ativa</label>
-                                    <input type="text" id="cfg_key" value="${db.config.chave}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono tracking-widest text-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <input type="text" id="cfg_key" value="${db.config.chave}" required class="w-full px-3 py-2 bg-[#030712] border border-slate-800 rounded-xl text-xs font-mono tracking-widest text-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
                                 </div>
                                 <button type="submit" class="w-full py-2.5 rounded-xl font-bold text-slate-950 gold-gradient shadow hover:opacity-90 transition text-xs">Salvar Configurações</button>
                             </form>
@@ -801,13 +801,13 @@
                         <div class="glass-card p-6 rounded-2xl shadow-sm flex flex-col justify-between">
                             <div>
                                 <h3 class="font-bold text-sm text-slate-200 mb-2"><i class="fa-solid fa-database text-amber-500"></i> Backup de Segurança</h3>
-                                <p class="text-xs text-slate-400 leading-relaxed mb-4">Como este sistema opera localmente para máxima velocidade de carregamento, recomendamos baixar um arquivo de segurança periodicamente para não perder seus registros financeiros.</p>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-4">Como este sistema opera localmente para máxima performance de carregamento, recomendamos baixar um arquivo de segurança periodicamente para não perder seus registros financeiros.</p>
                             </div>
                             <div class="space-y-2">
                                 <button onclick="realizarBackup()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow transition">
                                     <i class="fa-solid fa-download"></i> Exportar Banco de Dados em JSON
                                 </button>
-                                <button onclick="localStorage.clear(); location.reload();" class="w-full py-2.5 bg-rose-950/40 text-rose-400 hover:bg-rose-950/60 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition">
+                                <button onclick="localStorage.clear(); location.reload();" class="w-full py-2.5 bg-rose-950/20 text-rose-400 hover:bg-rose-950/40 border border-rose-500/20 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition">
                                     <i class="fa-solid fa-trash-can"></i> Limpar Tudo (Reset de Fábrica)
                                 </button>
                             </div>
